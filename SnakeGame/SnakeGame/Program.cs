@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using LiteDB;
 
@@ -73,7 +70,7 @@ struct Point
     public static Point RandomIn(Frame frame)
     {
         var random = new Random();
-        return new Point(random.Next(frame.MinX, frame.MaxX), random.Next(frame.MinY, frame.MaxY));
+        return new Point(random.Next(frame.MinX + 1, frame.MaxX - 1), random.Next(frame.MinY + 1, frame.MaxY - 1));
     }
 }
 
@@ -144,15 +141,15 @@ class Snake
 
     public void Move()
     {
-        var tail = Body.Last.Value;
+        var head = Body.First.Value;
         Body.RemoveLast();
-        tail = tail.Moved(Direction);
-        Body.AddFirst(tail);
+        var point = head.Moved(Direction);
+        Body.AddFirst(point);
     }
 
     public bool IsBitingTail()
     {
-        return Body.Any(p => p.Overlaps(Body.First.Value));
+        return Body.Count(p => p.Overlaps(Body.First.Value)) > 1;
     }
 
     public bool IsHeadIn(Frame frame)
@@ -290,15 +287,17 @@ class GameService : IGameService
 
 class GameDbDto
 {
-    
 }
-class GameRepository :IGameRepository, IDisposable
+
+class GameRepository : IGameRepository, IDisposable
 {
     private readonly LiteDatabase _db;
+
     public GameRepository()
     {
-         _db = new LiteDatabase("Filename=./game.db;Mode=Exclusive");
+        _db = new LiteDatabase("Filename=./game.db;Mode=Exclusive");
     }
+
     public List<Game> All()
     {
         return _db.GetCollection<Game>().FindAll().ToList();
@@ -315,7 +314,7 @@ class GameRepository :IGameRepository, IDisposable
     }
 }
 
-struct PointModel
+public class PointModel
 {
     public int X { get; set; }
     public int Y { get; set; }
@@ -409,14 +408,13 @@ namespace SnakeGame
         {
             using (var repository = new GameRepository())
             {
-                var game = new ConsoleGameController(new GameService(repository, 30, 30));
-                var maxScore = game.MaxScore();
+                var game = new ConsoleGameController(new GameService(repository, 40, 40));
                 while (true)
                 {
                     Console.Clear();
 
-                      Console.WriteLine($"MaxScore:{maxScore}");
-                      Console.WriteLine($"CurrentScore:{game.Score()}");
+                    Console.WriteLine($"MaxScore:{game.MaxScore()}");
+                    Console.WriteLine($"CurrentScore:{game.Score()}");
 
                     var points = game.Draw();
 
@@ -430,7 +428,8 @@ namespace SnakeGame
                         game.Input(Console.ReadKey().Key);
 
                     game.Logic();
-                    Thread.Sleep(2000);
+
+                    Thread.Sleep(100);
                 }
             }
         }
