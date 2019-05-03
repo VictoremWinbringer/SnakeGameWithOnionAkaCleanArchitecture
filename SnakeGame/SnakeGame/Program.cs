@@ -67,7 +67,7 @@ struct Point
             default: throw new ArgumentException("Unknown direction");
         }
     }
-    
+
     public static Point RandomIn(Frame frame)
     {
         var random = new Random();
@@ -84,7 +84,7 @@ class Food
     {
         Body = Point.RandomIn(frame);
     }
-    
+
     public Food(Guid id, Point body)
     {
         Body = body;
@@ -112,16 +112,18 @@ class Snake
 
         if (body.Count < 3)
             throw new ArgumentException("body.Count < 3");
-        
-        if(id == Guid.Empty)
+
+        if (id == Guid.Empty)
             throw new ArgumentException("Empty Id");
 
         Id = id;
         Body = body;
         Direction = direction;
     }
-    
-    public Snake(LinkedList<Point> body): this(Guid.NewGuid(), body,Direction.Right){}
+
+    public Snake(LinkedList<Point> body) : this(Guid.NewGuid(), body, Direction.Right)
+    {
+    }
 
     public void Turn(Direction direction)
     {
@@ -159,11 +161,11 @@ class Snake
 
 class Game
 {
-    public Guid Id { get;}
+    public Guid Id { get; }
     public Snake Snake { get; }
     public Frame Frame { get; }
     public Food Food { get; }
-    
+
     public bool GameOver { get; private set; }
 
     private Stopwatch Stopwatch { get; }
@@ -176,24 +178,26 @@ class Game
         Food = food;
         Stopwatch = Stopwatch.StartNew();
     }
-    
-    public Game(Snake snake, Frame frame, Food food):this(Guid.NewGuid(), snake,frame,food){}
+
+    public Game(Snake snake, Frame frame, Food food) : this(Guid.NewGuid(), snake, frame, food)
+    {
+    }
 
     public void Input(Direction direction)
     {
         Snake.Turn(direction);
     }
-    
+
     public void Logic()
     {
-        if(GameOver)
+        if (GameOver)
             return;
-        
+
         if (Stopwatch.Elapsed.Milliseconds < 100)
             return;
-        
+
         Stopwatch.Restart();
-        
+
         if (!Snake.IsHeadIn(Frame) ||
             Snake.IsBitingTail())
         {
@@ -206,7 +210,7 @@ class Game
             Snake.Eat(Food);
             Food.MoveRandomIn(Frame);
         }
-        
+
         Snake.Move();
     }
 }
@@ -226,35 +230,36 @@ interface IGameService
     void Logic();
 }
 
-class GameService:IGameService
+class GameService : IGameService
 {
     private readonly IGameRepository _gameRepository;
     private readonly int _maxX;
     private readonly int _maxY;
     private Game _game;
-    public GameService(IGameRepository gameRepository,int maxX, int maxY)
+
+    public GameService(IGameRepository gameRepository, int maxX, int maxY)
     {
         _gameRepository = gameRepository;
         _maxX = maxX;
         _maxY = maxY;
     }
-    
+
     private Game CreateGame(int maxX, int maxY)
     {
-        if(maxX < 4) 
-            throw new ArgumentException( "maxX < 4");
-        if(maxY < 4) 
+        if (maxX < 4)
+            throw new ArgumentException("maxX < 4");
+        if (maxY < 4)
             throw new ArgumentException("maxY < 4");
-        
-        var frame = new Frame(0,0,maxX,maxY);
+
+        var frame = new Frame(0, 0, maxX, maxY);
         var food = new Food(frame);
         var list = new LinkedList<Point>();
         list.AddLast(new Point(1, 1));
         list.AddLast(new Point(2, 2));
         list.AddLast(new Point(3, 3));
-        
+
         var snake = new Snake(list);
-        return new Game(snake,frame,food);
+        return new Game(snake, frame, food);
     }
 
     public int GetCurrentScore()
@@ -306,7 +311,7 @@ class ConsoleGameController
     public void Input(ConsoleKey key)
     {
         var direction = Parse(key);
-        if(direction.HasValue)
+        if (direction.HasValue)
             _service.Input(direction.Value);
     }
 
@@ -320,22 +325,34 @@ class ConsoleGameController
         return _service.MaxScore();
     }
 
-    public PointModel[,] Draw()
+    public List<PointModel> Draw()
     {
         var game = _service.Draw();
-       List<Point> points = new List<Point>();
+        List<PointModel> points = new List<PointModel>();
+        var frameSym = 's';
+        var snakeSym = 'c';
+        var foodSym = '#';
 
-       for (int i = game.Frame.MinX; i <= game.Frame.MaxX; i++)
-       {
-           for (int j = game.Frame.MinY; j <= game.Frame.MaxY; j++)
-           {
-               if (i == game.Frame.MinX )
-               {
-                   
-               }
-           }
-       }
-       
+        for (int i = game.Frame.MinX; i <= game.Frame.MaxX; i++)
+        {
+            for (int j = game.Frame.MinY; j <= game.Frame.MaxY; j++)
+            {
+                if (i == game.Frame.MinX ||
+                    i == game.Frame.MaxX ||
+                    j == game.Frame.MinY ||
+                    j == game.Frame.MaxY)
+                    points.Add(new PointModel {X = i, Y = j, Sym = frameSym});
+            }
+        }
+
+        foreach (var point in game.Snake.Body)
+        {
+            points.Add(new PointModel {X = point.X, Y = point.Y, Sym = snakeSym});
+        }
+
+        points.Add(new PointModel {X = game.Food.Body.X, Y = game.Food.Body.Y, Sym = foodSym});
+
+        return points;
     }
 
     private Direction? Parse(ConsoleKey key)
@@ -353,9 +370,7 @@ class ConsoleGameController
             default: return null;
         }
     }
-
 }
-
 
 
 namespace SnakeGame
