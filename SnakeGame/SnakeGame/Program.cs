@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using LiteDB;
-
+//Domen -----------------------------------------------
 enum Direction
 {
     Top,
@@ -206,6 +206,8 @@ class Game
     }
 }
 
+// UseCase ----------------------------------------------------------------------------------------------
+
 interface IGameRepository
 {
     List<Game> All();
@@ -284,9 +286,112 @@ class GameService : IGameService
             _gameRepository.Add(_game);
     }
 }
+//Infrastructure ---------------------------------------------------------------------------
+// 1) Db -----------------------------
+class PointDbDto
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+
+    public Point To()
+    {
+        return new Point(X, Y);
+    }
+
+    public static PointDbDto From(Point point)
+    {
+        return new PointDbDto
+        {
+            X = point.X,
+            Y = point.Y
+        };
+    }
+}
+
+class FrameDbDto
+{
+    public PointDbDto Min { get; set; }
+    public PointDbDto Max { get; set; }
+
+    public Frame To()
+    {
+        return new Frame(Min.X,Min.Y,Max.X,Max.Y);
+    }
+
+    public static FrameDbDto From(Frame frame)
+    {
+        return new FrameDbDto
+        {
+            Max = new PointDbDto {X = frame.MaxX, Y = frame.MaxY},
+            Min = new PointDbDto {X = frame.MinX, Y = frame.MinY}
+        };
+    }
+}
+
+class FoodBdDto
+{
+    public Guid Id { get; set; }
+    public PointDbDto Body { get; set; }
+
+    public Food To()
+    {
+        return new Food(Id,Body.To());
+    }
+
+    public static FoodBdDto From(Food food)
+    {
+        return new FoodBdDto
+        {
+            Id = food.Id,
+            Body = PointDbDto.From(food.Body)
+        };
+    }
+}
+
+class SnakeDbDto
+{
+    public Guid Id { get; set; }
+    public List<PointDbDto> Body { get; set; }
+    public Direction Direction { get;  set; }
+
+    public Snake To()
+    {
+        return new Snake(Id,new LinkedList<Point>(Body.Select(p=>p.To())),Direction);
+    }
+
+    public static SnakeDbDto From(Snake snake)
+    {
+        return new SnakeDbDto
+        {
+            Id = snake.Id,
+            Body = snake.Body.Select(PointDbDto.From).ToList(),
+            Direction = snake.Direction
+        };
+    }
+}
 
 class GameDbDto
 {
+    public Guid Id { get; set; }
+    public SnakeDbDto Snake { get; set; }
+    public FrameDbDto Frame { get; set; }
+    public FoodBdDto Food { get; set; }
+
+    public Game To()
+    {
+        return new Game(Id,Snake.To(),Frame.To(),Food.To());
+    }
+
+    public static GameDbDto From(Game game)
+    {
+        return new GameDbDto
+        {
+            Id = game.Id,
+            Snake = SnakeDbDto.From(game.Snake),
+            Food = FoodBdDto.From(game.Food),
+            Frame = FrameDbDto.From(game.Frame)
+        };
+    }
 }
 
 class GameRepository : IGameRepository, IDisposable
@@ -300,12 +405,13 @@ class GameRepository : IGameRepository, IDisposable
 
     public List<Game> All()
     {
-        return _db.GetCollection<Game>().FindAll().ToList();
+        return _db.GetCollection<GameDbDto>().FindAll()
+            .Select(g=>g.To()).ToList();
     }
 
     public void Add(Game game)
     {
-        _db.GetCollection<Game>().Insert(game);
+        _db.GetCollection<GameDbDto>().Insert(GameDbDto.From(game));
     }
 
     public void Dispose()
@@ -314,6 +420,8 @@ class GameRepository : IGameRepository, IDisposable
     }
 }
 
+
+//2) UI-----------------------------------------
 public class PointModel
 {
     public int X { get; set; }
@@ -387,13 +495,13 @@ class ConsoleGameController
         switch (key)
         {
             case ConsoleKey.UpArrow:
-                return Direction.Top;
+                return Direction.Bottom;
             case ConsoleKey.DownArrow:
                 return Direction.Top;
             case ConsoleKey.LeftArrow:
-                return Direction.Top;
+                return Direction.Left;
             case ConsoleKey.RightArrow:
-                return Direction.Top;
+                return Direction.Right;
             default: return null;
         }
     }
@@ -408,7 +516,8 @@ namespace SnakeGame
         {
             using (var repository = new GameRepository())
             {
-                var game = new ConsoleGameController(new GameService(repository, 40, 40));
+                var game = new ConsoleGameController(new GameService(repository, 40, 30));
+                Console.CursorVisible = false;
                 while (true)
                 {
                     Console.Clear();
