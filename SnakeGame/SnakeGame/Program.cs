@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
+using LiteDB;
 
 enum Direction
 {
@@ -168,15 +170,12 @@ class Game
 
     public bool GameOver { get; private set; }
 
-    private Stopwatch Stopwatch { get; }
-
     public Game(Guid id, Snake snake, Frame frame, Food food)
     {
         Id = id;
         Snake = snake;
         Frame = frame;
         Food = food;
-        Stopwatch = Stopwatch.StartNew();
     }
 
     public Game(Snake snake, Frame frame, Food food) : this(Guid.NewGuid(), snake, frame, food)
@@ -192,11 +191,6 @@ class Game
     {
         if (GameOver)
             return;
-
-        if (Stopwatch.Elapsed.Milliseconds < 100)
-            return;
-
-        Stopwatch.Restart();
 
         if (!Snake.IsHeadIn(Frame) ||
             Snake.IsBitingTail())
@@ -242,6 +236,7 @@ class GameService : IGameService
         _gameRepository = gameRepository;
         _maxX = maxX;
         _maxY = maxY;
+        _game = CreateGame(maxX, maxY);
     }
 
     private Game CreateGame(int maxX, int maxY)
@@ -269,7 +264,8 @@ class GameService : IGameService
 
     public int MaxScore()
     {
-        return _gameRepository.All().Max(g => g.Snake.Body.Count) - 3;
+        var all = _gameRepository.All();
+        return all.Count > 0 ? all.Max(g => g.Snake.Body.Count) - 3 : 0;
     }
 
     public Game Draw()
@@ -289,6 +285,33 @@ class GameService : IGameService
         _game.Logic();
         if (_game.GameOver)
             _gameRepository.Add(_game);
+    }
+}
+
+class GameDbDto
+{
+    
+}
+class GameRepository :IGameRepository, IDisposable
+{
+    private readonly LiteDatabase _db;
+    public GameRepository()
+    {
+         _db = new LiteDatabase("Filename=./game.db;Mode=Exclusive");
+    }
+    public List<Game> All()
+    {
+        return _db.GetCollection<Game>().FindAll().ToList();
+    }
+
+    public void Add(Game game)
+    {
+        _db.GetCollection<Game>().Insert(game);
+    }
+
+    public void Dispose()
+    {
+        _db.Dispose();
     }
 }
 
@@ -355,6 +378,11 @@ class ConsoleGameController
         return points;
     }
 
+    public void Logic()
+    {
+        _service.Logic();
+    }
+
     private Direction? Parse(ConsoleKey key)
     {
         switch (key)
@@ -377,9 +405,34 @@ namespace SnakeGame
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            Console.WriteLine("Hello World!");
+            using (var repository = new GameRepository())
+            {
+                var game = new ConsoleGameController(new GameService(repository, 30, 30));
+                var maxScore = game.MaxScore();
+                while (true)
+                {
+                    Console.Clear();
+
+                      Console.WriteLine($"MaxScore:{maxScore}");
+                      Console.WriteLine($"CurrentScore:{game.Score()}");
+
+                    var points = game.Draw();
+
+                    foreach (var pointModel in points)
+                    {
+                        Console.SetCursorPosition(pointModel.X, pointModel.Y + 2);
+                        Console.Write(pointModel.Sym);
+                    }
+
+                    if (Console.KeyAvailable)
+                        game.Input(Console.ReadKey().Key);
+
+                    game.Logic();
+                    Thread.Sleep(2000);
+                }
+            }
         }
     }
 }
