@@ -121,6 +121,23 @@ class Food
     }
 }
 
+class SnakeBodyNullException:Exception
+{
+    
+}
+
+class SnakeIdEmptyException:Exception
+{
+    
+}
+
+class SnakeBodyEptyException:Exception
+{
+    public SnakeBodyEptyException()
+    {
+    }
+}
+
 class Snake
 {
     public Guid Id { get; }
@@ -131,13 +148,13 @@ class Snake
     public Snake(Guid id, LinkedList<Point> body, Direction direction)
     {
         if (body == null)
-            throw new ArgumentNullException(nameof(body));
+            throw new SnakeBodyNullException();
 
         if (body.Count < 3)
-            throw new ArgumentException("body.Count < 3");
+            throw new SnakeBodyEptyException();
 
         if (id == Guid.Empty)
-            throw new ArgumentException("Empty Id");
+            throw new SnakeIdEmptyException();
 
         Id = id;
         Body = body;
