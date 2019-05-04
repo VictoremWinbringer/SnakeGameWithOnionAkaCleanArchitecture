@@ -138,6 +138,18 @@ class SnakeBodyEptyException:Exception
     }
 }
 
+class SnakeFromFoodToFarException:Exception
+{
+    public Point Head { get;  }
+    public Point Food { get;  }
+
+    public SnakeFromFoodToFarException(Point head, Point food)
+    {
+        Head = head;
+        Food = food;
+    }
+}
+
 class Snake
 {
     public Guid Id { get; }
@@ -172,6 +184,9 @@ class Snake
 
     public void Eat(Food food)
     {
+        if(!CanEat(food))
+            throw new SnakeFromFoodToFarException(Body.Last.Value,food.Body);
+        
         Body.AddLast(food.Body);
     }
 
@@ -244,20 +259,11 @@ class Game
     {
         if(id == Guid.Empty)
             throw new GameIdEmptyException();
-        
-        if(snake == null)
-            throw new GameSnakeNullExpection();
-        
-        if(frame == null)
-            throw new GameFrameNullException();
-        
-        if(food == null)
-            throw new GameFoodIsNullException();
-        
+
         Id = id;
-        Snake = snake;
-        Frame = frame;
-        Food = food;
+        Snake = snake ?? throw new GameSnakeNullExpection();
+        Frame = frame ?? throw new GameFrameNullException();
+        Food = food ?? throw new GameFoodIsNullException();
     }
 
     public Game(Snake snake, Frame frame, Food food) : this(Guid.NewGuid(), snake, frame, food)
