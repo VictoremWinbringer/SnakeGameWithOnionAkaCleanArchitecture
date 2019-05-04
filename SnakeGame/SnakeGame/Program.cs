@@ -21,15 +21,39 @@ class Frame
 
     public Frame(int minX, int minY, int maxX, int maxY)
     {
-        if (maxX <= minY)
-            throw new ArgumentException("start.X < start.Y");
+        if (maxX <= minX)
+            throw new FrameXValidationException(minX,maxX);
         if (maxY <= minY)
-            throw new ArgumentException("start.Y < start.Y");
+            throw new FrameYValidationException(minY,maxY);
 
         MinX = minX;
         MinY = minY;
         MaxX = maxX;
         MaxY = maxY;
+    }
+}
+
+class FrameXValidationException:Exception
+{
+    public int StratX { get; set; }
+    public int EndX { get; set; }
+
+    public FrameXValidationException(int stratX, int endX)
+    {
+        StratX = stratX;
+        EndX = endX;
+    }
+}
+
+class FrameYValidationException : Exception
+{
+    public int StratY { get; set; }
+    public int EndY { get; set; }
+
+    public FrameYValidationException(int stratY, int endY)
+    {
+        StratY = stratY;
+        EndY = endY;
     }
 }
 
