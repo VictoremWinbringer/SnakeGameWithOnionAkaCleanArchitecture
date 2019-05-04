@@ -421,7 +421,7 @@ class GameRepository : IGameRepository, IDisposable
 }
 
 
-//2) UI-----------------------------------------
+// UI-----------------------------------------
 public class PointModel
 {
     public int X { get; set; }
