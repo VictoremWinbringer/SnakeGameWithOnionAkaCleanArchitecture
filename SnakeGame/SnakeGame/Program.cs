@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using LiteDB;
+
 //Domen -----------------------------------------------
 enum Direction
 {
@@ -22,9 +23,9 @@ class Frame
     public Frame(int minX, int minY, int maxX, int maxY)
     {
         if (maxX <= minX)
-            throw new FrameXValidationException(minX,maxX);
+            throw new FrameXValidationException(minX, maxX);
         if (maxY <= minY)
-            throw new FrameYValidationException(minY,maxY);
+            throw new FrameYValidationException(minY, maxY);
 
         MinX = minX;
         MinY = minY;
@@ -33,7 +34,7 @@ class Frame
     }
 }
 
-class FrameXValidationException:Exception
+class FrameXValidationException : Exception
 {
     public int StratX { get; set; }
     public int EndX { get; set; }
@@ -121,27 +122,25 @@ class Food
     }
 }
 
-class SnakeBodyNullException:Exception
+class SnakeBodyNullException : Exception
 {
-    
 }
 
-class SnakeIdEmptyException:Exception
+class SnakeIdEmptyException : Exception
 {
-    
 }
 
-class SnakeBodyEptyException:Exception
+class SnakeBodyEptyException : Exception
 {
     public SnakeBodyEptyException()
     {
     }
 }
 
-class SnakeFromFoodToFarException:Exception
+class SnakeFromFoodToFarException : Exception
 {
-    public Point Head { get;  }
-    public Point Food { get;  }
+    public Point Head { get; }
+    public Point Food { get; }
 
     public SnakeFromFoodToFarException(Point head, Point food)
     {
@@ -184,9 +183,9 @@ class Snake
 
     public void Eat(Food food)
     {
-        if(!CanEat(food))
-            throw new SnakeFromFoodToFarException(Body.Last.Value,food.Body);
-        
+        if (!CanEat(food))
+            throw new SnakeFromFoodToFarException(Body.Last.Value, food.Body);
+
         Body.AddLast(food.Body);
     }
 
@@ -214,35 +213,43 @@ class Snake
     }
 }
 
-class GameIdEmptyException:Exception
+class GameIdEmptyException : Exception
 {
     public GameIdEmptyException()
     {
-        
     }
 }
 
-class GameSnakeNullExpection:Exception
+class GameSnakeNullExpection : Exception
 {
     public GameSnakeNullExpection()
     {
-        
     }
 }
 
-class GameFrameNullException:Exception
+class GameFrameNullException : Exception
 {
     public GameFrameNullException()
     {
-        
     }
 }
 
-class GameFoodIsNullException:Exception
+class GameFoodIsNullException : Exception
 {
     public GameFoodIsNullException()
     {
-        
+    }
+}
+
+class GameFrameToSmallForSnakeException : Exception
+{
+    public Snake Snake { get; }
+    public Frame Frame { get; }
+
+    public GameFrameToSmallForSnakeException(Snake snake, Frame frame)
+    {
+        Snake = snake;
+        Frame = frame;
     }
 }
 
@@ -257,13 +264,16 @@ class Game
 
     public Game(Guid id, Snake snake, Frame frame, Food food)
     {
-        if(id == Guid.Empty)
+        if (id == Guid.Empty)
             throw new GameIdEmptyException();
 
         Id = id;
         Snake = snake ?? throw new GameSnakeNullExpection();
         Frame = frame ?? throw new GameFrameNullException();
         Food = food ?? throw new GameFoodIsNullException();
+
+        if (Math.Abs(Frame.MaxX - Frame.MinX) * Math.Abs(Frame.MaxY - Frame.MinY) < Snake.Body.Count * Snake.Body.Count)
+            throw new GameFrameToSmallForSnakeException(snake, frame);
     }
 
     public Game(Snake snake, Frame frame, Food food) : this(Guid.NewGuid(), snake, frame, food)
@@ -317,45 +327,51 @@ interface IGameService
 class GameService : IGameService
 {
     private readonly IGameRepository _gameRepository;
-    private readonly int _maxX;
-    private readonly int _maxY;
+    private readonly int _snakeLength;
+    private readonly int _height;
     private Game _game;
+    private int _maxScore;
 
-    public GameService(IGameRepository gameRepository, int maxX, int maxY)
+    public GameService(IGameRepository gameRepository, int snakeLength,int height)
     {
         _gameRepository = gameRepository;
-        _maxX = maxX;
-        _maxY = maxY;
-        _game = CreateGame(maxX, maxY);
+        _snakeLength = snakeLength;
+        _height = height;
+        _game = CreateGame(snakeLength, height);
     }
 
-    private Game CreateGame(int maxX, int maxY)
+    private Game CreateGame(int snakeLength, int height)
     {
-        if (maxX < 4)
-            throw new ArgumentException("maxX < 4");
-        if (maxY < 4)
-            throw new ArgumentException("maxY < 4");
-
-        var frame = new Frame(0, 0, maxX, maxY);
+        var frame = new Frame(0, 0, height, height);
         var food = new Food(frame);
         var list = new LinkedList<Point>();
-        list.AddLast(new Point(1, 1));
-        list.AddLast(new Point(2, 2));
-        list.AddLast(new Point(3, 3));
-
+        for (int i = 1; i < height; i++)
+        {
+            for (int j = 1; j < height; j++)
+            {
+                if(i==j && list.Count < snakeLength)
+                list.AddLast(new Point(i, j));
+            }
+        }
         var snake = new Snake(list);
+        _maxScore = InnerMaxScore();
         return new Game(snake, frame, food);
     }
 
     public int GetCurrentScore()
     {
-        return _game.Snake.Body.Count - 3;
+        return _game.Snake.Body.Count - _snakeLength;
     }
 
     public int MaxScore()
     {
+        return _maxScore;
+    }
+
+    private int InnerMaxScore()
+    {
         var all = _gameRepository.All();
-        return all.Count > 0 ? all.Max(g => g.Snake.Body.Count) - 3 : 0;
+        return all.Count > 0 ? all.Max(g => g.Snake.Body.Count) - _snakeLength : 0;
     }
 
     public Game Draw()
@@ -370,13 +386,16 @@ class GameService : IGameService
 
     public void Logic()
     {
-        if (_game == null || _game.GameOver)
-            _game = CreateGame(_maxX, _maxY);
         _game.Logic();
         if (_game.GameOver)
+        {
             _gameRepository.Add(_game);
+            _maxScore = InnerMaxScore();
+            _game = CreateGame(_snakeLength, _height);
+        }
     }
 }
+
 //Infrastructure ---------------------------------------------------------------------------
 // 1) Db -----------------------------
 class PointDbDto
@@ -406,7 +425,7 @@ class FrameDbDto
 
     public Frame To()
     {
-        return new Frame(Min.X,Min.Y,Max.X,Max.Y);
+        return new Frame(Min.X, Min.Y, Max.X, Max.Y);
     }
 
     public static FrameDbDto From(Frame frame)
@@ -426,7 +445,7 @@ class FoodBdDto
 
     public Food To()
     {
-        return new Food(Id,Body.To());
+        return new Food(Id, Body.To());
     }
 
     public static FoodBdDto From(Food food)
@@ -443,11 +462,11 @@ class SnakeDbDto
 {
     public Guid Id { get; set; }
     public List<PointDbDto> Body { get; set; }
-    public Direction Direction { get;  set; }
+    public Direction Direction { get; set; }
 
     public Snake To()
     {
-        return new Snake(Id,new LinkedList<Point>(Body.Select(p=>p.To())),Direction);
+        return new Snake(Id, new LinkedList<Point>(Body.Select(p => p.To())), Direction);
     }
 
     public static SnakeDbDto From(Snake snake)
@@ -470,7 +489,7 @@ class GameDbDto
 
     public Game To()
     {
-        return new Game(Id,Snake.To(),Frame.To(),Food.To());
+        return new Game(Id, Snake.To(), Frame.To(), Food.To());
     }
 
     public static GameDbDto From(Game game)
@@ -497,7 +516,7 @@ class GameRepository : IGameRepository, IDisposable
     public List<Game> All()
     {
         return _db.GetCollection<GameDbDto>().FindAll()
-            .Select(g=>g.To()).ToList();
+            .Select(g => g.To()).ToList();
     }
 
     public void Add(Game game)
@@ -607,7 +626,7 @@ namespace SnakeGame
         {
             using (var repository = new GameRepository())
             {
-                var game = new ConsoleGameController(new GameService(repository, 40, 30));
+                var game = new ConsoleGameController(new GameService(repository, 3, 30));
                 Console.CursorVisible = false;
                 while (true)
                 {
@@ -616,7 +635,7 @@ namespace SnakeGame
                     Console.WriteLine($"MaxScore:{game.MaxScore()}");
                     Console.WriteLine($"CurrentScore:{game.Score()}");
 
-                    var points = game.Draw();
+                    var points = game.Draw(); 
 
                     foreach (var pointModel in points)
                     {
