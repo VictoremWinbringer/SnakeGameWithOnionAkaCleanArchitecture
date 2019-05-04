@@ -199,6 +199,38 @@ class Snake
     }
 }
 
+class GameIdEmptyException:Exception
+{
+    public GameIdEmptyException()
+    {
+        
+    }
+}
+
+class GameSnakeNullExpection:Exception
+{
+    public GameSnakeNullExpection()
+    {
+        
+    }
+}
+
+class GameFrameNullException:Exception
+{
+    public GameFrameNullException()
+    {
+        
+    }
+}
+
+class GameFoodIsNullException:Exception
+{
+    public GameFoodIsNullException()
+    {
+        
+    }
+}
+
 class Game
 {
     public Guid Id { get; }
@@ -210,6 +242,18 @@ class Game
 
     public Game(Guid id, Snake snake, Frame frame, Food food)
     {
+        if(id == Guid.Empty)
+            throw new GameIdEmptyException();
+        
+        if(snake == null)
+            throw new GameSnakeNullExpection();
+        
+        if(frame == null)
+            throw new GameFrameNullException();
+        
+        if(food == null)
+            throw new GameFoodIsNullException();
+        
         Id = id;
         Snake = snake;
         Frame = frame;
