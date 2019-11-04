@@ -8,6 +8,7 @@ using LiteDB;
 
 enum DomainExceptionCode
 {
+    SnakeFromFoodToFar
 }
 
 [Serializable]
@@ -26,95 +27,74 @@ sealed class DomainException : Exception
     public DomainExceptionCode Code { get; }
 }
 
-class SnakeBodyNullException : Exception
+class SnakeBody
 {
-}
-
-class SnakeIdEmptyException : Exception
-{
-}
-
-class SnakeBodyEptyException : Exception
-{
-    public SnakeBodyEptyException()
+    private readonly LinkedList<Point> _value;
+    public IReadOnlyCollection<Point> Value => _value;
+    public SnakeBody(IEnumerable<Point> value)
     {
+        _value = new LinkedList<Point>(value);
+        if (_value.Count < 3)
+            throw new ArgumentOutOfRangeException(nameof(_value.Count));
     }
-}
 
-class SnakeFromFoodToFarException : Exception
-{
-    public Point Head { get; }
-    public Point Food { get; }
+    public Point Last => _value.Last.Value;
 
-    public SnakeFromFoodToFarException(Point head, Point food)
-    {
-        Head = head;
-        Food = food;
-    }
+    public Point Head => _value.First.Value;
+
+    public void AddLast(Point point) => _value.AddLast(point);
+    public void RemoveLast() => _value.RemoveLast();
+    public void SetHead(Point point) => _value.AddFirst(point);
+    public int Count => _value.Count;
+    public bool BitesSelf => _value.Count(p => p.Overlaps(Head)) > 1;
 }
 
 class Snake
 {
-    public Guid Id { get; }
-    public LinkedList<Point> Body { get; }
+    public SnakeId Id { get; }
+    public SnakeBody Body { get; }
 
     public Direction Direction { get; private set; }
 
-    public Snake(Guid id, LinkedList<Point> body, Direction direction)
+    public Snake(SnakeId id, SnakeBody body, Direction direction)
     {
-        if (body == null)
-            throw new SnakeBodyNullException();
-
-        if (body.Count < 3)
-            throw new SnakeBodyEptyException();
-
-        if (id == Guid.Empty)
-            throw new SnakeIdEmptyException();
-
-        Id = id;
-        Body = body;
+        Id = id ?? throw new ArgumentNullException(nameof(id));
+        Body = body ?? throw new ArgumentNullException(nameof(body));
         Direction = direction;
     }
 
-    public Snake(LinkedList<Point> body) : this(Guid.NewGuid(), body, Direction.Right)
+    public Snake(SnakeBody body) : this(new SnakeId(Guid.NewGuid()), body, Direction.Right)
     {
     }
 
-    public void Turn(Direction direction)
-    {
-        Direction = direction;
-    }
+    public void Turn(Direction direction) => Direction = direction;
 
     public void Eat(Food food)
     {
         if (!CanEat(food))
-            throw new SnakeFromFoodToFarException(Body.Last.Value, food.Body);
+        {
+            var ex = new DomainException(DomainExceptionCode.SnakeFromFoodToFar);
+            ex.Data[nameof(food.Body)] = food.Body;
+            ex.Data[nameof(Body.Last)] = Body.Last;
+            throw ex;
+        }
 
         Body.AddLast(food.Body);
     }
 
-    public bool CanEat(Food food)
-    {
-        return food.Body.Overlaps(Body.First.Value);
-    }
+    public bool CanEat(Food food) => food.Body.Overlaps(Body.Head);
 
     public void Move()
     {
-        var head = Body.First.Value;
+        var head = Body.Head;
         Body.RemoveLast();
         var point = head.Moved(Direction);
-        Body.AddFirst(point);
+        Body.SetHead(point);
     }
 
-    public bool IsBitingTail()
-    {
-        return Body.Count(p => p.Overlaps(Body.First.Value)) > 1;
-    }
+    public bool IsBitingTail => Body.BitesSelf;
 
-    public bool IsHeadIn(Frame frame)
-    {
-        return Body.First.Value.IsIn(frame);
-    }
+    public bool IsHeadIn(Frame frame) => Body.Head.IsIn(frame);
 }
 
 class GameIdEmptyException : Exception
@@ -195,7 +175,7 @@ class Game
             return;
 
         if (!Snake.IsHeadIn(Frame) ||
-            Snake.IsBitingTail())
+            Snake.IsBitingTail)
         {
             GameOver = true;
             return;
@@ -257,7 +237,7 @@ class GameService : IGameService
                     list.AddLast(new Point(i, j));
             }
         }
-        var snake = new Snake(list);
+        var snake = new Snake(new SnakeBody(list));
         _maxScore = InnerMaxScore();
         return new Game(snake, frame, food);
     }
@@ -349,7 +329,7 @@ class FoodBdDto
 
     public Food To()
     {
-        return new Food(Id, Body.To());
+        return new Food(new FoodId(Id), Body.To());
     }
 
     public static FoodBdDto From(Food food)
@@ -370,15 +350,15 @@ class SnakeDbDto
 
     public Snake To()
     {
-        return new Snake(Id, new LinkedList<Point>(Body.Select(p => p.To())), Direction);
+        return new Snake(new SnakeId(Id), new SnakeBody(new LinkedList<Point>(Body.Select(p => p.To()))), Direction);
     }
 
     public static SnakeDbDto From(Snake snake)
     {
         return new SnakeDbDto
         {
-            Id = snake.Id,
-            Body = snake.Body.Select(PointDbDto.From).ToList(),
+            Id = snake.Id.Value,
+            Body = snake.Body.Value.Select(PointDbDto.From).ToList(),
             Direction = snake.Direction
         };
     }
@@ -489,7 +469,7 @@ class ConsoleGameController
             }
         }
 
-        foreach (var point in game.Snake.Body)
+        foreach (var point in game.Snake.Body.Value)
         {
             points.Add(new PointModel { X = point.X, Y = point.Y, Sym = snakeSym });
         }
