@@ -1,125 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using LiteDB;
 
-//Domen -----------------------------------------------
-enum Direction
+
+enum DomainExceptionCode
 {
-    Top,
-    Bottom,
-    Left,
-    Right
 }
 
-class Frame
+[Serializable]
+sealed class DomainException : Exception
 {
-    public int MinX { get; }
-    public int MinY { get; }
-    public int MaxX { get; }
-    public int MaxY { get; }
+    public DomainException(DomainExceptionCode code) : base() { Code = code; }
+    public DomainException(DomainExceptionCode code, string message) : base(message) { Code = code; }
+    public DomainException(DomainExceptionCode code, string message, Exception inner) : base(message, inner) { Code = code; }
 
-    public Frame(int minX, int minY, int maxX, int maxY)
+    public override void GetObjectData(SerializationInfo info, StreamingContext context)
     {
-        if (maxX <= minX)
-            throw new FrameXValidationException(minX, maxX);
-        if (maxY <= minY)
-            throw new FrameYValidationException(minY, maxY);
-
-        MinX = minX;
-        MinY = minY;
-        MaxX = maxX;
-        MaxY = maxY;
-    }
-}
-
-class FrameXValidationException : Exception
-{
-    public int StratX { get; set; }
-    public int EndX { get; set; }
-
-    public FrameXValidationException(int stratX, int endX)
-    {
-        StratX = stratX;
-        EndX = endX;
-    }
-}
-
-class FrameYValidationException : Exception
-{
-    public int StratY { get; set; }
-    public int EndY { get; set; }
-
-    public FrameYValidationException(int stratY, int endY)
-    {
-        StratY = stratY;
-        EndY = endY;
-    }
-}
-
-struct Point
-{
-    public int X { get; }
-    public int Y { get; }
-
-    public Point(int x, int y)
-    {
-        X = x;
-        Y = y;
+        info.AddValue(nameof(Code), Code);
+        base.GetObjectData(info, context);
     }
 
-    public bool Overlaps(Point point)
-    {
-        return point.X == X && point.Y == Y;
-    }
-
-    public bool IsIn(Frame frame)
-    {
-        return X < frame.MaxX && X > frame.MinX &&
-               Y < frame.MaxY && Y > frame.MinY;
-    }
-
-    public Point Moved(Direction direction)
-    {
-        switch (direction)
-        {
-            case Direction.Top: return new Point(X, Y + 1);
-            case Direction.Bottom: return new Point(X, Y - 1);
-            case Direction.Right: return new Point(X + 1, Y);
-            case Direction.Left: return new Point(X - 1, Y);
-            default: throw new ArgumentException("Unknown direction");
-        }
-    }
-
-    public static Point RandomIn(Frame frame)
-    {
-        var random = new Random();
-        return new Point(random.Next(frame.MinX + 1, frame.MaxX - 1), random.Next(frame.MinY + 1, frame.MaxY - 1));
-    }
-}
-
-class Food
-{
-    public Guid Id { get; set; }
-    public Point Body { get; private set; }
-
-    public void MoveRandomIn(Frame frame)
-    {
-        Body = Point.RandomIn(frame);
-    }
-
-    public Food(Guid id, Point body)
-    {
-        Body = body;
-        Id = id;
-    }
-
-    public Food(Frame frame)
-    {
-        Id = Guid.NewGuid();
-        Body = Point.RandomIn(frame);
-    }
+    public DomainExceptionCode Code { get; }
 }
 
 class SnakeBodyNullException : Exception
@@ -332,7 +236,7 @@ class GameService : IGameService
     private Game _game;
     private int _maxScore;
 
-    public GameService(IGameRepository gameRepository, int snakeLength,int height)
+    public GameService(IGameRepository gameRepository, int snakeLength, int height)
     {
         _gameRepository = gameRepository;
         _snakeLength = snakeLength;
@@ -349,8 +253,8 @@ class GameService : IGameService
         {
             for (int j = 1; j < height; j++)
             {
-                if(i==j && list.Count < snakeLength)
-                list.AddLast(new Point(i, j));
+                if (i == j && list.Count < snakeLength)
+                    list.AddLast(new Point(i, j));
             }
         }
         var snake = new Snake(list);
@@ -432,8 +336,8 @@ class FrameDbDto
     {
         return new FrameDbDto
         {
-            Max = new PointDbDto {X = frame.MaxX, Y = frame.MaxY},
-            Min = new PointDbDto {X = frame.MinX, Y = frame.MinY}
+            Max = new PointDbDto { X = frame.MaxX, Y = frame.MaxY },
+            Min = new PointDbDto { X = frame.MinX, Y = frame.MinY }
         };
     }
 }
@@ -581,16 +485,16 @@ class ConsoleGameController
                     i == game.Frame.MaxX ||
                     j == game.Frame.MinY ||
                     j == game.Frame.MaxY)
-                    points.Add(new PointModel {X = i, Y = j, Sym = frameSym});
+                    points.Add(new PointModel { X = i, Y = j, Sym = frameSym });
             }
         }
 
         foreach (var point in game.Snake.Body)
         {
-            points.Add(new PointModel {X = point.X, Y = point.Y, Sym = snakeSym});
+            points.Add(new PointModel { X = point.X, Y = point.Y, Sym = snakeSym });
         }
 
-        points.Add(new PointModel {X = game.Food.Body.X, Y = game.Food.Body.Y, Sym = foodSym});
+        points.Add(new PointModel { X = game.Food.Body.X, Y = game.Food.Body.Y, Sym = foodSym });
 
         return points;
     }
@@ -635,7 +539,7 @@ namespace SnakeGame
                     Console.WriteLine($"MaxScore:{game.MaxScore()}");
                     Console.WriteLine($"CurrentScore:{game.Score()}");
 
-                    var points = game.Draw(); 
+                    var points = game.Draw();
 
                     foreach (var pointModel in points)
                     {
