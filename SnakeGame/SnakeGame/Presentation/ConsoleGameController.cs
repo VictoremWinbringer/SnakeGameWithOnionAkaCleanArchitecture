@@ -17,19 +17,13 @@ class ConsoleGameController
             _service.Input(direction.Value);
     }
 
-    public int Score()
-    {
-        return _service.GetCurrentScore();
-    }
+    public int Score => _service.CurrentScore;
 
-    public int MaxScore()
-    {
-        return _service.MaxScore();
-    }
+    public int MaxScore => _service.MaxScore;
 
     public List<PointModel> Draw()
     {
-        var game = _service.Draw();
+        var game = _service.Get;
         List<PointModel> points = new List<PointModel>();
         var frameSym = 's';
         var snakeSym = 'c';
