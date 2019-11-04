@@ -1,8 +1,8 @@
 ﻿interface IGameService
 {
-    int GetCurrentScore();
-    int MaxScore();
-    Game Draw();
+    int CurrentScore { get; }
+    int MaxScore { get; }
+    Game Get { get; }
     void Input(Direction direction);
     void Logic();
 }

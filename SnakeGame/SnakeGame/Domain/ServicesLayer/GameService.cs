@@ -1,23 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
-class GameService : IGameService
+interface IGameFactory
 {
-    private readonly IGameRepository _gameRepository;
-    private readonly int _snakeLength;
-    private readonly int _height;
-    private Game _game;
-    private int _maxScore;
+    Game Create();
+}
 
-    public GameService(IGameRepository gameRepository, int snakeLength, int height)
+class GameFactory
+{
+    private readonly int snakeLength;
+    private readonly int height;
+
+    public GameFactory(int snakeLength, int height)
     {
-        _gameRepository = gameRepository;
-        _snakeLength = snakeLength;
-        _height = height;
-        _game = CreateGame(snakeLength, height);
+        this.snakeLength = snakeLength;
+        this.height = height;
     }
-
-    private Game CreateGame(int snakeLength, int height)
+    public Game Create()
     {
         var frame = new Frame(0, 0, height, height);
         var food = new Food(frame);
@@ -31,30 +31,35 @@ class GameService : IGameService
             }
         }
         var snake = new Snake(new SnakeBody(list));
-        _maxScore = InnerMaxScore();
         return new Game(snake, frame, food);
     }
+}
 
-    public int GetCurrentScore()
+class GameService : IGameService
+{
+    private readonly IGameRepository _gameRepository;
+    private readonly IGameFactory _factory;
+    private Game _game;
+
+    public GameService(IGameRepository gameRepository, IGameFactory factory)
     {
-        return _game.Snake.Body.Count - _snakeLength;
+        _gameRepository = gameRepository ?? throw new ArgumentNullException(nameof(gameRepository));
+        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+        _game = _factory.Create();
     }
 
-    public int MaxScore()
+    public int CurrentScore => _game.Score;
+
+    public int MaxScore
     {
-        return _maxScore;
+        get
+        {
+            var all = _gameRepository.All();
+            return all.Count > 0 ? all.Max(g => g.Score) : 0;
+        }
     }
 
-    private int InnerMaxScore()
-    {
-        var all = _gameRepository.All();
-        return all.Count > 0 ? all.Max(g => g.Snake.Body.Count) - _snakeLength : 0;
-    }
-
-    public Game Draw()
-    {
-        return _game;
-    }
+    public Game Get => _game;
 
     public void Input(Direction direction)
     {
@@ -67,8 +72,7 @@ class GameService : IGameService
         if (_game.GameOver)
         {
             _gameRepository.Add(_game);
-            _maxScore = InnerMaxScore();
-            _game = CreateGame(_snakeLength, _height);
+            _game = _factory.Create();
         }
     }
 }

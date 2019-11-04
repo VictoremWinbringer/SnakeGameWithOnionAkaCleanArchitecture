@@ -6,15 +6,16 @@ class Game
     public Snake Snake { get; }
     public Frame Frame { get; }
     public Food Food { get; }
-
+    public int Score { get; private set; }
     public bool GameOver { get; private set; }
 
-    public Game(GameId id, Snake snake, Frame frame, Food food)
+    public Game(GameId id, Snake snake, Frame frame, Food food, int score)
     {
         Id = id ?? throw new ArgumentNullException(nameof(id));
         Snake = snake ?? throw new ArgumentNullException(nameof(snake));
         Frame = frame ?? throw new ArgumentNullException(nameof(frame));
         Food = food ?? throw new ArgumentNullException(nameof(food));
+        Score = score;
         if (Math.Abs(Frame.MaxX - Frame.MinX) * Math.Abs(Frame.MaxY - Frame.MinY) < Snake.Body.Count * Snake.Body.Count)
         {
             var ex = new DomainException(DomainExceptionCode.GameFrameToSmallForSnake);
@@ -24,7 +25,7 @@ class Game
         }
     }
 
-    public Game(Snake snake, Frame frame, Food food) : this(new GameId(Guid.NewGuid()), snake, frame, food)
+    public Game(Snake snake, Frame frame, Food food) : this(new GameId(Guid.NewGuid()), snake, frame, food, 0)
     {
     }
 
@@ -48,6 +49,7 @@ class Game
         if (Snake.CanEat(Food))
         {
             Snake.Eat(Food);
+            Score++;
             Food.MoveRandomIn(Frame);
         }
 
