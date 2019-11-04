@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Dawn.Guard" Version="1.10.0" />
       <PackageReference Include="LiteDB" Version="4.1.4" />
     </ItemGroup>
 

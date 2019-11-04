@@ -356,7 +356,7 @@ class FoodBdDto
     {
         return new FoodBdDto
         {
-            Id = food.Id,
+            Id = food.Id.Value,
             Body = PointDbDto.From(food.Body)
         };
     }
