@@ -2,29 +2,34 @@
 using System.Collections.Generic;
 using System.Linq;
 using LiteDB;
+using SnakeGame.Entities;
+using SnakeGame.Infrastructure.Dto;
 
-class GameRepository : IGameRepository, IDisposable
+namespace SnakeGame.Infrastructure
 {
-    private readonly LiteDatabase _db;
-
-    public GameRepository()
+    class GameRepository : IGameRepository, IDisposable
     {
-        _db = new LiteDatabase("Filename=./game.db;Mode=Exclusive");
-    }
+        private readonly LiteDatabase _db;
 
-    public List<Game> All()
-    {
-        return _db.GetCollection<GameDbDto>().FindAll()
-            .Select(g => g.To()).ToList();
-    }
+        public GameRepository()
+        {
+            _db = new LiteDatabase("Filename=./game.db;Mode=Exclusive");
+        }
 
-    public void Add(Game game)
-    {
-        _db.GetCollection<GameDbDto>().Insert(GameDbDto.From(game));
-    }
+        public List<Game> All()
+        {
+            return _db.GetCollection<GameDbDto>().FindAll()
+                .Select(g => g.To()).ToList();
+        }
 
-    public void Dispose()
-    {
-        _db.Dispose();
+        public void Add(Game game)
+        {
+            _db.GetCollection<GameDbDto>().Insert(GameDbDto.From(game));
+        }
+
+        public void Dispose()
+        {
+            _db.Dispose();
+        }
     }
 }

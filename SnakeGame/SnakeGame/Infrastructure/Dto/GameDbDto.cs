@@ -1,26 +1,30 @@
 ﻿using System;
+using SnakeGame.Entities;
 
-class GameDbDto
+namespace SnakeGame.Infrastructure.Dto
 {
-    public Guid Id { get; set; }
-    public SnakeDbDto Snake { get; set; }
-    public FrameDbDto Frame { get; set; }
-    public FoodBdDto Food { get; set; }
-    public int Score { get; set; }
-    public Game To()
+    class GameDbDto
     {
-        return new Game(new GameId(Id), Snake.To(), Frame.To(), Food.To(), Score);
-    }
-
-    public static GameDbDto From(Game game)
-    {
-        return new GameDbDto
+        public Guid Id { get; set; }
+        public SnakeDbDto Snake { get; set; }
+        public FrameDbDto Frame { get; set; }
+        public FoodBdDto Food { get; set; }
+        public int Score { get; set; }
+        public Game To()
         {
-            Id = game.Id.Value,
-            Snake = SnakeDbDto.From(game.Snake),
-            Food = FoodBdDto.From(game.Food),
-            Frame = FrameDbDto.From(game.Frame),
-            Score = game.Score
-        };
+            return new Game(Id, Snake.To(), Frame.To(), Food.To(), Score);
+        }
+
+        public static GameDbDto From(Game game)
+        {
+            return new GameDbDto
+            {
+                Id = game.Id,
+                Snake = SnakeDbDto.From(game.Snake),
+                Food = FoodBdDto.From(game.Food),
+                Frame = FrameDbDto.From(game.Frame),
+                Score = game.Score
+            };
+        }
     }
 }

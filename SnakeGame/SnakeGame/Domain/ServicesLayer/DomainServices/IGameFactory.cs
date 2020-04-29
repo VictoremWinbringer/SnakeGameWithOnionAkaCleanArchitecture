@@ -1,4 +1,0 @@
-﻿interface IGameFactory
-{
-    Game Create();
-}

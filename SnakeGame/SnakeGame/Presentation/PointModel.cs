@@ -1,8 +1,11 @@
 ﻿
 // UI-----------------------------------------
-public class PointModel
+namespace SnakeGame.Presentation
 {
-    public int X { get; set; }
-    public int Y { get; set; }
-    public char Sym { get; set; }
+    public class PointModel
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+        public char Sym { get; set; }
+    }
 }

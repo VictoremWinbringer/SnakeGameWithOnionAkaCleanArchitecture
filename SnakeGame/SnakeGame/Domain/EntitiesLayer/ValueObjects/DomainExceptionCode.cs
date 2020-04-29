@@ -1,5 +1,0 @@
-﻿enum DomainExceptionCode
-{
-    SnakeFromFoodToFar,
-    GameFrameToSmallForSnake
-}

@@ -1,22 +1,28 @@
 ﻿
 //Infrastructure ---------------------------------------------------------------------------
 // 1) Db -----------------------------
-class PointDbDto
+
+using SnakeGame.Entities.ValueObjects;
+
+namespace SnakeGame.Infrastructure.Dto
 {
-    public int X { get; set; }
-    public int Y { get; set; }
-
-    public Point To()
+    class PointDbDto
     {
-        return new Point(X, Y);
-    }
+        public int X { get; set; }
+        public int Y { get; set; }
 
-    public static PointDbDto From(Point point)
-    {
-        return new PointDbDto
+        public Point To()
         {
-            X = point.X,
-            Y = point.Y
-        };
+            return new Point(X, Y);
+        }
+
+        public static PointDbDto From(Point point)
+        {
+            return new PointDbDto
+            {
+                X = point.X,
+                Y = point.Y
+            };
+        }
     }
 }

@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Threading;
+using SnakeGame.ApplicationServices;
+using SnakeGame.DomainServices;
+using SnakeGame.Infrastructure;
+using SnakeGame.Presentation;
 
 
 namespace SnakeGame
