@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SnakeGame.Entities.ValueObjects
+namespace SnakeGame.ApplicationCore.Entities.ValueObjects
 {
     class Frame
     {

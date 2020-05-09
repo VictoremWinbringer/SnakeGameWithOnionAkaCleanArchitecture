@@ -1,7 +1,7 @@
 ﻿using System;
-using SnakeGame.Entities.ValueObjects;
+using SnakeGame.ApplicationCore.Entities.ValueObjects;
 
-namespace SnakeGame.Entities
+namespace SnakeGame.ApplicationCore.Entities
 {
     class Snake
     {
@@ -14,14 +14,14 @@ namespace SnakeGame.Entities
         {
             Id = id;
             Body = body ?? throw new ApplicationException("Body is null!");
-            Direction = direction;
+            ValueObjects.Direction = direction;
         }
 
         public Snake(SnakeBody body) : this(Guid.NewGuid(), body, Direction.Right)
         {
         }
 
-        public void Turn(Direction direction) => Direction = direction;
+        public void Turn(Direction direction) => ValueObjects.Direction = direction;
 
         public void Eat(Food food)
         {
@@ -42,7 +42,7 @@ namespace SnakeGame.Entities
         {
             var head = Body.Head;
             Body.RemoveLast();
-            var point = head.Moved(Direction);
+            var point = head.Moved(ValueObjects.Direction);
             Body.SetHead(point);
         }
 

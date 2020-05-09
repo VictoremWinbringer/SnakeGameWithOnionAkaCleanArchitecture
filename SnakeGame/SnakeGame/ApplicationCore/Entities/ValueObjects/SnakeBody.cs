@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SnakeGame.Entities.ValueObjects
+namespace SnakeGame.ApplicationCore.Entities.ValueObjects
 {
     class SnakeBody
     {
@@ -12,7 +12,7 @@ namespace SnakeGame.Entities.ValueObjects
         {
             _value = new LinkedList<Point>(value);
             if (_value.Count < 3)
-                throw new ArgumentOutOfRangeException(nameof(_value.Count));
+                throw new ApplicationException(nameof(_value.Count));
         }
 
         public Point Last => _value.Last.Value;

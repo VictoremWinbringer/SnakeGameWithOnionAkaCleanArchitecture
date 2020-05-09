@@ -1,7 +1,7 @@
-﻿using SnakeGame.Entities;
-using SnakeGame.Entities.ValueObjects;
+﻿using SnakeGame.ApplicationCore.Entities;
+using SnakeGame.ApplicationCore.Entities.ValueObjects;
 
-namespace SnakeGame.ApplicationServices
+namespace SnakeGame.ApplicationCore.ApplicationServices
 {
     interface IGameService
     {

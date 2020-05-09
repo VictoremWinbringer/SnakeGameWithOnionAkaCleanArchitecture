@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SnakeGame.Entities.ValueObjects
+namespace SnakeGame.ApplicationCore.Entities.ValueObjects
 {
 
     readonly struct Point
@@ -33,14 +33,8 @@ namespace SnakeGame.Entities.ValueObjects
                 case Direction.Bottom: return new Point(X, Y - 1);
                 case Direction.Right: return new Point(X + 1, Y);
                 case Direction.Left: return new Point(X - 1, Y);
-                default: throw new ArgumentException("Unknown direction");
+                default: throw new ApplicationException("Unknown direction");
             }
-        }
-
-        public static Point RandomIn(Frame frame)
-        {
-            var random = new Random();
-            return new Point(random.Next(frame.MinX + 1, frame.MaxX - 1), random.Next(frame.MinY + 1, frame.MaxY - 1));
         }
     }
 }

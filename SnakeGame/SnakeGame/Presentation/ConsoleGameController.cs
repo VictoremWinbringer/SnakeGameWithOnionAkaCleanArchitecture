@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using SnakeGame.ApplicationServices;
-using SnakeGame.Entities.ValueObjects;
+using SnakeGame.ApplicationCore.ApplicationServices;
+using SnakeGame.ApplicationCore.Entities.ValueObjects;
 
 namespace SnakeGame.Presentation
 {

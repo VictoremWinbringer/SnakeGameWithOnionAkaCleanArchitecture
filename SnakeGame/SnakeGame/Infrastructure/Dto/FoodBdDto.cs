@@ -1,5 +1,5 @@
 ﻿using System;
-using SnakeGame.Entities;
+using SnakeGame.ApplicationCore.Entities;
 
 namespace SnakeGame.Infrastructure.Dto
 {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using LiteDB;
-using SnakeGame.Entities;
+using SnakeGame.ApplicationCore.Entities;
 using SnakeGame.Infrastructure.Dto;
 
 namespace SnakeGame.Infrastructure

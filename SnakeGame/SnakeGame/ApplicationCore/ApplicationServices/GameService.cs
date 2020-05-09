@@ -1,23 +1,26 @@
 ﻿using System;
 using System.Linq;
-using SnakeGame.DomainServices;
-using SnakeGame.Entities;
-using SnakeGame.Entities.ValueObjects;
+using SnakeGame.ApplicationCore.DomainServices;
+using SnakeGame.ApplicationCore.Entities;
+using SnakeGame.ApplicationCore.Entities.ValueObjects;
 using SnakeGame.Infrastructure;
 
-namespace SnakeGame.ApplicationServices
+namespace SnakeGame.ApplicationCore.ApplicationServices
 {
     class GameService : IGameService
     {
         private readonly IGameRepository _gameRepository;
         private readonly IGameFactory _factory;
+        private readonly IRandomService _random;
         private Game _game;
-
-        public GameService(IGameRepository gameRepository, IGameFactory factory)
+        private readonly Func<Point> _createNewPoint;
+        public GameService(IGameRepository gameRepository, IGameFactory factory, IRandomService random)
         {
-            _gameRepository = gameRepository ?? throw new ArgumentNullException(nameof(gameRepository));
-            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _gameRepository = gameRepository ?? throw new ApplicationException(nameof(gameRepository));
+            _factory = factory ?? throw new ApplicationException(nameof(factory));
+            _random = random;
             _game = _factory.Create();
+            _createNewPoint = () => _random.Next(_game.Frame);
         }
 
         public int CurrentScore => _game.Score;

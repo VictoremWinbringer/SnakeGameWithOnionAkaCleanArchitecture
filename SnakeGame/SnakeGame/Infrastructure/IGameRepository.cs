@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using SnakeGame.Entities;
+using SnakeGame.ApplicationCore.Entities;
 
 // UseCase ----------------------------------------------------------------------------------------------
 

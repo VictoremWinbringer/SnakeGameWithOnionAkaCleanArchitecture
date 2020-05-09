@@ -1,10 +1,11 @@
 ﻿using System;
-using SnakeGame.Entities.ValueObjects;
+using SnakeGame.ApplicationCore.Entities.ValueObjects;
 
-namespace SnakeGame.Entities
+namespace SnakeGame.ApplicationCore.Entities
 {
     class Game
     {
+        private readonly Func<Point> _createNewFoodPosition;
         public Guid Id { get; }
         public Snake Snake { get; }
         public Frame Frame { get; }
@@ -37,25 +38,24 @@ namespace SnakeGame.Entities
             Snake.Turn(direction);
         }
 
-        public void Logic()
+        public void Logic(Func<Point> createNewFoodPosition)
         {
             if (GameOver)
                 return;
-
+            if (createNewFoodPosition == null)
+                throw new ApplicationException($"{nameof(createNewFoodPosition)} is Null!");
             if (!Snake.IsHeadIn(Frame) ||
                 Snake.IsBitingTail)
             {
                 GameOver = true;
                 return;
             }
-
             if (Snake.CanEat(Food))
             {
                 Snake.Eat(Food);
                 Score++;
-                Food.MoveRandomIn(Frame);
+                Food.MoveTo(_createNewFoodPosition());
             }
-
             Snake.Move();
         }
     }

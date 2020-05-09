@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
-using SnakeGame.ApplicationServices;
-using SnakeGame.DomainServices;
+using SnakeGame.ApplicationCore.ApplicationServices;
+using SnakeGame.ApplicationCore.DomainServices;
 using SnakeGame.Infrastructure;
 using SnakeGame.Presentation;
 

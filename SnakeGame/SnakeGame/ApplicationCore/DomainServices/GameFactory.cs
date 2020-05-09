@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using SnakeGame.Entities;
-using SnakeGame.Entities.ValueObjects;
+using SnakeGame.ApplicationCore.Entities;
+using SnakeGame.ApplicationCore.Entities.ValueObjects;
 
-namespace SnakeGame.DomainServices
+namespace SnakeGame.ApplicationCore.DomainServices
 {
     class GameFactory:IGameFactory
     {

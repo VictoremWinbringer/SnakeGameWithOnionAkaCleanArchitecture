@@ -1,4 +1,4 @@
-﻿using SnakeGame.Entities.ValueObjects;
+﻿using SnakeGame.ApplicationCore.Entities.ValueObjects;
 
 namespace SnakeGame.Infrastructure.Dto
 {

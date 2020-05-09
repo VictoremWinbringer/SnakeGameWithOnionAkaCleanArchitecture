@@ -1,16 +1,16 @@
 ﻿using System;
-using SnakeGame.Entities.ValueObjects;
+using SnakeGame.ApplicationCore.Entities.ValueObjects;
 
-namespace SnakeGame.Entities
+namespace SnakeGame.ApplicationCore.Entities
 {
     sealed class Food
     {
         public Guid Id { get; }
         public Point Body { get; private set; }
 
-        public void MoveRandomIn(Frame frame)
+        public void MoveTo(Point point)
         {
-            Body = Point.RandomIn(frame);
+            Body = point;
         }
 
         public Food(Guid id, Point body)
@@ -21,7 +21,7 @@ namespace SnakeGame.Entities
             Id = id;
         }
 
-        public Food(Frame frame) : this(Guid.NewGuid(), Point.RandomIn(frame))
+        public Food(Point body) : this(Guid.NewGuid(), body)
         {
         }
     }
