@@ -4,6 +4,6 @@ namespace SnakeGame.Infrastructure
 {
     interface IRandomService
     {
-        Point Next(Frame inFrame);
+        int Next(int min, int max);
     }
 }

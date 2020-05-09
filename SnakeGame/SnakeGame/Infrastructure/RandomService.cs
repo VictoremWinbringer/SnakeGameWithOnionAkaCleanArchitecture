@@ -13,11 +13,7 @@ namespace SnakeGame.Infrastructure
         {
             _random = random ?? throw new ApplicationException("Random is Null!");
         }
-        public Point Next(Frame inFrame)
-        {
-            var x = _random.Next(inFrame.MinX, inFrame.MaxX);
-            var y = _random.Next(inFrame.MinY, inFrame.MaxY);
-            return new Point(x, y);
-        }
+
+        public int Next(int min, int max) => _random.Next(min, max);
     }
 }

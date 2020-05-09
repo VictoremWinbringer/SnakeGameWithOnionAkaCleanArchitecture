@@ -19,7 +19,7 @@ namespace SnakeGame.ApplicationCore.ApplicationServices
             _gameRepository = gameRepository ?? throw new ApplicationException(nameof(gameRepository));
             _factory = factory ?? throw new ApplicationException(nameof(factory));
             _random = random;
-            _game = _factory.Create(_random.Next);
+            _game = _factory.Create(CreatePointInFrame);
         }
 
         public int CurrentScore => _game.Score;
@@ -42,12 +42,15 @@ namespace SnakeGame.ApplicationCore.ApplicationServices
 
         public void Logic()
         {
-            _game.Logic(_random.Next);
+            _game.Logic(CreatePointInFrame);
             if (_game.GameOver)
             {
                 _gameRepository.Add(_game);
-                _game = _factory.Create(_random.Next);
+                _game = _factory.Create(CreatePointInFrame);
             }
         }
+
+        private Point CreatePointInFrame(Frame frame) =>
+            new Point(_random.Next(frame.MinX, frame.MaxY), _random.Next(frame.MinY, frame.MaxY));
     }
 }
