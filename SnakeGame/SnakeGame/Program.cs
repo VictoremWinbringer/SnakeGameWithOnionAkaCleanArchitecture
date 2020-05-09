@@ -18,27 +18,21 @@ namespace SnakeGame
                 var pointGenerator = new RandomService(new Random());
                 var gameService = new GameService(repository, gameFactory, pointGenerator);
                 var gameController = new ConsoleGameController(gameService);
-                Console.CursorVisible = false;
                 while (true)
                 {
                     Console.Clear();
-
+                    Console.CursorVisible = false;
                     Console.WriteLine($"MaxScore:{gameController.MaxScore}");
                     Console.WriteLine($"CurrentScore:{gameController.Score}");
-
                     var points = gameController.Draw();
-
                     foreach (var pointModel in points)
                     {
                         Console.SetCursorPosition(pointModel.X, pointModel.Y + 2);
                         Console.Write(pointModel.Sym);
                     }
-
                     if (Console.KeyAvailable)
                         gameController.Input(Console.ReadKey().Key);
-
                     gameController.Logic();
-
                     Thread.Sleep(100);
                 }
             }
