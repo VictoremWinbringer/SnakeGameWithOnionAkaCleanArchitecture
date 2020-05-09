@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SnakeGame.ApplicationCore.Entities;
 using SnakeGame.ApplicationCore.Entities.ValueObjects;
 
 namespace SnakeGame.ApplicationCore.DomainServices
 {
-    class GameFactory:IGameFactory
+    class GameFactory : IGameFactory
     {
         private readonly int snakeLength;
         private readonly int height;
@@ -14,10 +15,10 @@ namespace SnakeGame.ApplicationCore.DomainServices
             this.snakeLength = snakeLength;
             this.height = height;
         }
-        public Game Create()
+        public Game Create(Func<Frame, Point> createFoodBody)
         {
             var frame = new Frame(0, 0, height, height);
-            var food = new Food(frame);
+            var food = new Food(createFoodBody(frame));
             var list = new LinkedList<Point>();
             for (int i = 1; i < height; i++)
             {

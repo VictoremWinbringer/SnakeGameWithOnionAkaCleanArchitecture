@@ -13,14 +13,13 @@ namespace SnakeGame.ApplicationCore.ApplicationServices
         private readonly IGameFactory _factory;
         private readonly IRandomService _random;
         private Game _game;
-        private readonly Func<Point> _createNewPoint;
+
         public GameService(IGameRepository gameRepository, IGameFactory factory, IRandomService random)
         {
             _gameRepository = gameRepository ?? throw new ApplicationException(nameof(gameRepository));
             _factory = factory ?? throw new ApplicationException(nameof(factory));
             _random = random;
-            _game = _factory.Create();
-            _createNewPoint = () => _random.Next(_game.Frame);
+            _game = _factory.Create(_random.Next);
         }
 
         public int CurrentScore => _game.Score;
@@ -43,11 +42,11 @@ namespace SnakeGame.ApplicationCore.ApplicationServices
 
         public void Logic()
         {
-            _game.Logic();
+            _game.Logic(_random.Next);
             if (_game.GameOver)
             {
                 _gameRepository.Add(_game);
-                _game = _factory.Create();
+                _game = _factory.Create(_random.Next);
             }
         }
     }

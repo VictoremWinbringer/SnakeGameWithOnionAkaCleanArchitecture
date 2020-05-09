@@ -14,14 +14,14 @@ namespace SnakeGame.ApplicationCore.Entities
         {
             Id = id;
             Body = body ?? throw new ApplicationException("Body is null!");
-            ValueObjects.Direction = direction;
+            Direction = direction;
         }
 
         public Snake(SnakeBody body) : this(Guid.NewGuid(), body, Direction.Right)
         {
         }
 
-        public void Turn(Direction direction) => ValueObjects.Direction = direction;
+        public void Turn(Direction direction) => Direction = direction;
 
         public void Eat(Food food)
         {
@@ -42,7 +42,7 @@ namespace SnakeGame.ApplicationCore.Entities
         {
             var head = Body.Head;
             Body.RemoveLast();
-            var point = head.Moved(ValueObjects.Direction);
+            var point = head.Moved(Direction);
             Body.SetHead(point);
         }
 

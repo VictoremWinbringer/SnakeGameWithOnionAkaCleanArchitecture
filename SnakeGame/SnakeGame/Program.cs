@@ -14,16 +14,19 @@ namespace SnakeGame
         {
             using (var repository = new GameRepository())
             {
-                var controller = new ConsoleGameController(new GameService(repository,new GameFactory(3,30)));
+                var gameFactory = new GameFactory(3, 30);
+                var pointGenerator = new RandomService(new Random());
+                var gameService = new GameService(repository, gameFactory, pointGenerator);
+                var gameController = new ConsoleGameController(gameService);
                 Console.CursorVisible = false;
                 while (true)
                 {
                     Console.Clear();
 
-                    Console.WriteLine($"MaxScore:{controller.MaxScore}");
-                    Console.WriteLine($"CurrentScore:{controller.Score}");
+                    Console.WriteLine($"MaxScore:{gameController.MaxScore}");
+                    Console.WriteLine($"CurrentScore:{gameController.Score}");
 
-                    var points = controller.Draw();
+                    var points = gameController.Draw();
 
                     foreach (var pointModel in points)
                     {
@@ -32,9 +35,9 @@ namespace SnakeGame
                     }
 
                     if (Console.KeyAvailable)
-                        controller.Input(Console.ReadKey().Key);
+                        gameController.Input(Console.ReadKey().Key);
 
-                    controller.Logic();
+                    gameController.Logic();
 
                     Thread.Sleep(100);
                 }

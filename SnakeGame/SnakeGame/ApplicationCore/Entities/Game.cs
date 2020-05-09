@@ -5,7 +5,6 @@ namespace SnakeGame.ApplicationCore.Entities
 {
     class Game
     {
-        private readonly Func<Point> _createNewFoodPosition;
         public Guid Id { get; }
         public Snake Snake { get; }
         public Frame Frame { get; }
@@ -38,7 +37,7 @@ namespace SnakeGame.ApplicationCore.Entities
             Snake.Turn(direction);
         }
 
-        public void Logic(Func<Point> createNewFoodPosition)
+        public void Logic(Func<Frame, Point> createNewFoodPosition)
         {
             if (GameOver)
                 return;
@@ -54,7 +53,7 @@ namespace SnakeGame.ApplicationCore.Entities
             {
                 Snake.Eat(Food);
                 Score++;
-                Food.MoveTo(_createNewFoodPosition());
+                Food.MoveTo(createNewFoodPosition(Frame));
             }
             Snake.Move();
         }

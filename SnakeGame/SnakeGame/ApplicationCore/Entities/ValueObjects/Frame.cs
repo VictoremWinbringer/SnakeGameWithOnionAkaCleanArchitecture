@@ -12,9 +12,9 @@ namespace SnakeGame.ApplicationCore.Entities.ValueObjects
         public Frame(int minX, int minY, int maxX, int maxY)
         {
             if (maxX <= minX)
-                throw new ArgumentOutOfRangeException(nameof(maxX));
+                throw new ApplicationException(nameof(maxX));
             if (maxY <= minY)
-                throw new ArgumentOutOfRangeException(nameof(maxX));
+                throw new ApplicationException(nameof(maxX));
             MinX = minX;
             MinY = minY;
             MaxX = maxX;
