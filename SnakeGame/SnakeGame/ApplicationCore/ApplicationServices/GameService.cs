@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using SnakeGame.ApplicationCore.ApplicationServices.Infrastructure.Interfaces;
 using SnakeGame.ApplicationCore.DomainServices;
 using SnakeGame.ApplicationCore.Entities;
 using SnakeGame.ApplicationCore.Entities.ValueObjects;

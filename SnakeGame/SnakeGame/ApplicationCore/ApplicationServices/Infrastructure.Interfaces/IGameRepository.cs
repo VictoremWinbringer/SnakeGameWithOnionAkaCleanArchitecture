@@ -3,7 +3,7 @@ using SnakeGame.ApplicationCore.Entities;
 
 // UseCase ----------------------------------------------------------------------------------------------
 
-namespace SnakeGame.Infrastructure
+namespace SnakeGame.ApplicationCore.ApplicationServices.Infrastructure.Interfaces
 {
     interface IGameRepository
     {

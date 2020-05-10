@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using LiteDB;
+using SnakeGame.ApplicationCore.ApplicationServices.Infrastructure.Interfaces;
 using SnakeGame.ApplicationCore.Entities;
 using SnakeGame.Infrastructure.Dto;
 
