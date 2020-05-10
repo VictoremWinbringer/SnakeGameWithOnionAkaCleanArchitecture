@@ -6,6 +6,6 @@ namespace SnakeGame.ApplicationCore.DomainServices
 {
     interface IGameFactory
     {
-        Game Create(Func<Frame, Point> createFoodBody);
+        Game Create(int offset, int height, int snakeLength);
     }
 }

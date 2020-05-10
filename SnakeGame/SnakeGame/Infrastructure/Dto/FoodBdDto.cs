@@ -10,7 +10,7 @@ namespace SnakeGame.Infrastructure.Dto
 
         public Food To()
         {
-            return new Food(Id, Body.To());
+            return new Food(Id, Body.To(), new Random());
         }
 
         public static FoodBdDto From(Food food)

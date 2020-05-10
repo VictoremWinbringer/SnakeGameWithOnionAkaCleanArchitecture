@@ -37,12 +37,10 @@ namespace SnakeGame.ApplicationCore.Entities
             Snake.Turn(direction);
         }
 
-        public void Logic(Func<Frame, Point> createNewFoodPosition)
+        public void Logic()
         {
             if (GameOver)
                 return;
-            if (createNewFoodPosition == null)
-                throw new ApplicationException($"{nameof(createNewFoodPosition)} is Null!");
             if (!Snake.IsHeadIn(Frame) ||
                 Snake.IsBitingTail)
             {
@@ -53,7 +51,7 @@ namespace SnakeGame.ApplicationCore.Entities
             {
                 Snake.Eat(Food);
                 Score++;
-                Food.MoveTo(createNewFoodPosition(Frame));
+                Food.MoveRandomIn(Frame);
             }
             Snake.Move();
         }

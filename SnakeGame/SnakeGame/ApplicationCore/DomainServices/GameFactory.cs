@@ -7,18 +7,15 @@ namespace SnakeGame.ApplicationCore.DomainServices
 {
     class GameFactory : IGameFactory
     {
-        private readonly int snakeLength;
-        private readonly int height;
-
-        public GameFactory(int snakeLength, int height)
+        public GameFactory()
         {
-            this.snakeLength = snakeLength;
-            this.height = height;
         }
-        public Game Create(Func<Frame, Point> createFoodBody)
+
+        public Game Create(int offset, int height, int snakeLength)
         {
-            var frame = new Frame(0, 0, height, height);
-            var food = new Food(createFoodBody(frame));
+            var frame = new Frame(offset, offset, height, height);
+            var food = new Food(new Point());
+            food.MoveRandomIn(frame);
             var list = new LinkedList<Point>();
             for (int i = 1; i < height; i++)
             {

@@ -14,9 +14,8 @@ namespace SnakeGame
         {
             using (var repository = new GameRepository())
             {
-                var gameFactory = new GameFactory(3, 30);
-                var pointGenerator = new RandomService(new Random());
-                var gameService = new GameService(repository, gameFactory, pointGenerator);
+                var gameFactory = new GameFactory();
+                var gameService = new GameService(repository, gameFactory, 30,3);
                 var gameController = new ConsoleGameController(gameService);
                 while (true)
                 {
