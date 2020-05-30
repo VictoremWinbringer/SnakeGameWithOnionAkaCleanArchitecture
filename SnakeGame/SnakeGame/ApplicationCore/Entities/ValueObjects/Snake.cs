@@ -1,23 +1,20 @@
 ﻿using System;
-using SnakeGame.ApplicationCore.Entities.ValueObjects;
 
-namespace SnakeGame.ApplicationCore.Entities
+namespace SnakeGame.ApplicationCore.Entities.ValueObjects
 {
     class Snake
     {
-        public Guid Id { get; }
         public SnakeBody Body { get; }
 
         public Direction Direction { get; private set; }
 
-        public Snake(Guid id, SnakeBody body, Direction direction)
+        public Snake(SnakeBody body, Direction direction)
         {
-            Id = id;
             Body = body ?? throw new ApplicationException("Body is null!");
             Direction = direction;
         }
 
-        public Snake(SnakeBody body) : this(Guid.NewGuid(), body, Direction.Right)
+        public Snake(SnakeBody body) : this(body, Direction.Right)
         {
         }
 

@@ -1,5 +1,6 @@
 ﻿
 //Domen -----------------------------------------------
+
 namespace SnakeGame.ApplicationCore.Entities.ValueObjects
 {
     enum Direction
